@@ -466,17 +466,16 @@ namespace KingOfTheHill
                 string objectText = "abc";
                 var dummy = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute("-Select Component Below-"), MyStringId.GetOrCompute("-Select Component Below-"), objectText);
                 arg2.Add(dummy);
-                
+                if (!string.IsNullOrEmpty(Data.ComponentListBoxOutputString))
+                {
+                    var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(Data.ComponentListBoxOutputString),
+                        MyStringId.GetOrCompute(Data.ComponentListBoxOutputString), Data.ComponentListBoxOutputString);
+                    arg2.Add(placeholder);
+                    arg3.Add(placeholder);
+                }
                 foreach (var name in ComponentPrizeList) {
                     
                     var toList = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(name), MyStringId.GetOrCompute(name), objectText);
-                    if (!string.IsNullOrEmpty(Data.ComponentListBoxOutputString))
-                    {
-                        var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(Data.ComponentListBoxOutputString),
-                            MyStringId.GetOrCompute(Data.ComponentListBoxOutputString), Data.ComponentListBoxOutputString);
-                        arg2.Add(placeholder);
-                        arg3.Add(placeholder);
-                    }
                     arg2.Add(toList);
                 }
 
