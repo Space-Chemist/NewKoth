@@ -470,20 +470,17 @@ namespace KingOfTheHill
                 foreach (var name in ComponentPrizeList) {
                     
                     var toList = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(name), MyStringId.GetOrCompute(name), objectText);
+                    if (!string.IsNullOrEmpty(Data.ComponentListBoxOutputString))
+                    {
+                        var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(Data.ComponentListBoxOutputString),
+                            MyStringId.GetOrCompute(Data.ComponentListBoxOutputString), Data.ComponentListBoxOutputString);
+                        arg3.Add(placeholder);
+                    }
+                    else
                     if (string.IsNullOrEmpty(name));
                     {
-                        if (!string.IsNullOrEmpty(Data.ComponentListBoxOutputString))
-                        {
-                            var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute("placeholder"),
-                                MyStringId.GetOrCompute("placeholder"), Data.ComponentListBoxOutputString);
-                            arg3.Add(placeholder);
-                        }
-                        else
-                        {
-                            arg3.Add(toList);
-                        }
+                        arg3.Add(toList);
                     }
-                    
                     arg2.Add(toList);
                 }
 
