@@ -474,6 +474,7 @@ namespace KingOfTheHill
                     {
                         var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(Data.ComponentListBoxOutputString),
                             MyStringId.GetOrCompute(Data.ComponentListBoxOutputString), Data.ComponentListBoxOutputString);
+                        arg2.Add(placeholder);
                         arg3.Add(placeholder);
                     }
                     else
