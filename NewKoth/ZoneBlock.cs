@@ -482,8 +482,6 @@ namespace KingOfTheHill
                         {
                             arg3.Add(toList);
                         }
-                       
-                        
                     }
                     
                     arg2.Add(toList);
