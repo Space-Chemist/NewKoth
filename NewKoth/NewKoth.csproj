@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ProtoBuf.Net, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\..\..\..\..\..\..\..\torch\DedicatedServer64\ProtoBuf.Net.dll</HintPath>
+      <HintPath>..\..\..\Desktop\TORCH\DedicatedServer64\ProtoBuf.Net.dll</HintPath>
     </Reference>
     <Reference Include="ProtoBuf.Net.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\..\..\..\..\..\..\..\..\..\torch\DedicatedServer64\ProtoBuf.Net.Core.dll</HintPath>

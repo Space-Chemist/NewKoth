@@ -472,7 +472,8 @@ namespace KingOfTheHill
                     var toList = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(name), MyStringId.GetOrCompute(name), objectText);
                     if (string.IsNullOrEmpty(name));
                     {
-                        arg3.Add(toList);
+                        var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute("placeholder"), MyStringId.GetOrCompute("placeholder"), Data.ComponentListBoxOutputString);
+                        arg3.Add(placeholder);
                     }
                     
                     arg2.Add(toList);
