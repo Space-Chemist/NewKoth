@@ -476,7 +476,6 @@ namespace KingOfTheHill
                             MyStringId.GetOrCompute(Data.ComponentListBoxOutputString), Data.ComponentListBoxOutputString);
                         arg2.Add(placeholder);
                         arg3.Add(placeholder);
-                        return;
                     }
                     arg2.Add(toList);
                 }
