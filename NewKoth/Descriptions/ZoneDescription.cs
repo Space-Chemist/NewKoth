@@ -122,6 +122,11 @@ namespace KingOfTheHill.Descriptions
         [ProtoMember(38)]
         public bool AdvancedIngotSelection { get; set; }
         
+        [ProtoMember(39)]
+        public bool LocationName { get; set; }
+        [ProtoMember(40)]
+        public string Message { get; set; }
+
 
         public void Save(IMyEntity ent)
         {
@@ -194,7 +199,9 @@ namespace KingOfTheHill.Descriptions
                 OreListBoxOutputString = "",
                 AdvancedOreSelection = false,
                 IngotListBoxOutputString = "",
-                AdvancedIngotSelection = false
+                AdvancedIngotSelection = false,
+                LocationName = false,
+                Message = ""
 
             };
         }

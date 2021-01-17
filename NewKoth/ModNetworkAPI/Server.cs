@@ -14,6 +14,7 @@ namespace ModNetworkAPI
         /// Server class contains a few server only feature beond what is inharited from the NetworkAPI
         /// </summary>
         /// <param name="comId">Identifies the channel to pass information to and from this mod</param>
+        /// <param name="modName"></param>
         /// <param name="keyword">identifies what chat entries should be captured and sent to the server</param>
         public Server(ushort comId, string modName, string keyword = null) : base(comId, modName, keyword)
         {

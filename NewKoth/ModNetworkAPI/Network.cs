@@ -1,7 +1,13 @@
 ﻿using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Security.Policy;
+using System.Text;
+using KingOfTheHill;
+using Sandbox.Game;
+using VRage.Scripting;
 using VRage.Utils;
+using KingOfTheHill.Descriptions;
 
 namespace ModNetworkAPI
 {
@@ -11,6 +17,7 @@ namespace ModNetworkAPI
     {
         public static NetworkAPI Instance = null;
         public static bool IsInitialized = Instance != null;
+        
 
         /// <summary>
         /// Event triggers apon reciveing data over the network
@@ -29,7 +36,7 @@ namespace ModNetworkAPI
         /// </summary>
         public NetworkTypes NetworkType => GetNetworkType();
 
-        public readonly ushort ComId;
+        public static ushort ComId;
         public readonly string Keyword;
         public readonly string ModName;
 
@@ -43,7 +50,7 @@ namespace ModNetworkAPI
         /// </summary>
         /// <param name="comId">The communication channel this mod will listen on</param>
         /// <param name="modName">The title use for displaying chat messages</param>
-        /// <param name="keyward">The string identifying a chat command</param>
+        /// <param name="keyword">The string identifying a chat command</param>
         public NetworkAPI(ushort comId, string modName, string keyword = null)
         {
             ComId = comId;
@@ -58,6 +65,101 @@ namespace ModNetworkAPI
             MyAPIGateway.Multiplayer.RegisterMessageHandler(ComId, HandleIncomingPacket);
 
             MyLog.Default.Info($"[NetworkAPI] Initialized. ComId: {ComId} Name: {ModName} Keyword: {Keyword}");
+        }
+        
+        public enum MessageType : byte
+        {
+            DeleteD = 0,
+            RunF = 1,
+            Message = 2
+        }
+        
+        public void RegisterHandlers()
+        {
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(Core.ComId, MessageHandler);
+        }
+
+        public static void UnregisterHandlers()
+        {
+            MyAPIGateway.Multiplayer.UnregisterMessageHandler(Core.ComId, MessageHandler);
+        }
+
+        private static void MessageHandler(byte[] bytes)
+        {
+            try
+            {
+                var type = (MessageType)bytes[1];
+
+
+                var data = new byte[bytes.Length - 1];
+                Array.Copy(bytes, 1, data, 0, data.Length);
+
+                switch (type)
+                {
+                    case MessageType.DeleteD:
+                        DeleteD();
+                        break;
+                    case MessageType.Message:
+                        Message(data);
+                        break;
+                    default:
+                        return;
+                }
+            }
+            catch (Exception ex)
+            {
+                
+            }
+        }
+        
+        [Serializable]
+        public struct Package
+        {
+            public string Message;
+        }
+        
+        public static void Message(byte[] data)
+        {
+            var package = MyAPIGateway.Utilities.SerializeFromXML<Package>(Encoding.UTF8.GetString(data));
+            
+        }
+
+        public static void DeleteD()
+        {
+            Core.Clearscore();
+            string message = "fuck you reload";
+            var package = new Package
+            {
+                Message = message,
+            };
+            byte[] data = Encoding.UTF8.GetBytes(MyAPIGateway.Utilities.SerializeToXML(package));
+            SendToServer(MessageType.RunF, data, ComId);
+            
+        }
+
+        
+
+        public void MessageToServer()
+        {
+            MyVisualScriptLogicProvider.SendChatMessage("function fired");
+            string message = "fuck you reload";
+            var package = new Package
+            {
+                Message = message,
+            };
+            byte[] data = Encoding.UTF8.GetBytes(MyAPIGateway.Utilities.SerializeToXML(package));
+            SendToServer(MessageType.RunF, data, ComId);
+            MyVisualScriptLogicProvider.SendChatMessage("before send to server");
+        }
+
+        public static void SendToServer(MessageType type, byte[] data, ushort comId)
+        {
+            MyVisualScriptLogicProvider.SendChatMessage("sending to server");
+            ComId = comId;
+            var newData = new byte[data.Length + 1];
+            newData[1] = (byte)type;
+            data.CopyTo(newData, 1);
+            MyAPIGateway.Utilities.InvokeOnGameThread(() => { MyAPIGateway.Multiplayer.SendMessageToServer(ComId, newData); });
         }
 
         /// <summary>
@@ -127,7 +229,7 @@ namespace ModNetworkAPI
             }
             catch (Exception e)
             {
-                MyLog.Default.Error($"[NetworkAPI] Failed to unpack message:\n{e.ToString()}");
+                
             }
         }
 
@@ -219,6 +321,7 @@ namespace ModNetworkAPI
             {
                 MyAPIGateway.Utilities.MessageEntered -= HandleChatInput;
             }
+            
 
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(ComId, HandleIncomingPacket);
 

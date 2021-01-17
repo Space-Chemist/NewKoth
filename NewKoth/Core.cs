@@ -18,6 +18,7 @@ using KingOfTheHill.Template;
 using KingOfTheHill;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
+using VRage.Scripting;
 
 namespace KingOfTheHill
 {
@@ -52,12 +53,13 @@ namespace KingOfTheHill
         public override void Init(MyObjectBuilder_SessionComponent sessionComponent)
         {
             Tools.Log(MyLogSeverity.Info, "Initializing");
-            
+
             Settings.LoadSettings();
             LoadData();
             if (!NetworkAPI.IsInitialized)
             {
-                NetworkAPI.Init(ComId, DisplayName, Keyword);                
+                NetworkAPI.Init(ComId, DisplayName, Keyword);
+                Network.RegisterHandlers();
             }
 
             Network.RegisterChatCommand(string.Empty, Chat_Help);
@@ -75,6 +77,8 @@ namespace KingOfTheHill
                 Network.RegisterNetworkCommand("score", ClientCallback_Score);
                 Network.RegisterNetworkCommand("sync_zone", ClientCallback_SyncZone);
                 Network.RegisterNetworkCommand("Clear", ServerCallback_Clear);
+                Network.RegisterNetworkCommand("Wipe", ServerCallBack_Wipe);
+                Network.RegisterNetworkCommand("BotMessage", ServerCallback_BotMessage);
             }
             else
             {
@@ -105,6 +109,8 @@ namespace KingOfTheHill
                 Network.RegisterNetworkCommand("save", ServerCallback_Save);
                 Network.RegisterNetworkCommand("Clear", ServerCallback_Clear);
                 Network.RegisterNetworkCommand("force_load", ServerCallback_ForceLoad);
+                Network.RegisterNetworkCommand("Wipe", ServerCallBack_Wipe);
+                Network.RegisterNetworkCommand("BotMessage", ServerCallback_BotMessage);
             }
 
 
@@ -136,7 +142,7 @@ namespace KingOfTheHill
             }
         }
 
-        private void Clearscore()
+        public static void Clearscore()
         {
             if (!MyAPIGateway.Multiplayer.IsServer) return;
             Session session = new Session();
@@ -367,20 +373,33 @@ namespace KingOfTheHill
                     }
                 }
 
-                if (zone.Data.AwardPointsAsCredits)
+                if (zone.Data.AwardPointsAsCredits & !zone.Data.LocationName)
                 {
                     faction.RequestChangeBalance(points * Money);
-                    message = $"{faction.Name} Scored 1 Points! ({points * Money} credits)";
+                    message = $"{faction.Name} Scored {points} Points! ({points * Money} credits)";
+                }
+                else if (zone.Data.LocationName & !zone.Data.AwardPointsAsCredits)
+                {
+                    message = $"{g} on {name} under attack {faction.Name} Scored {points} Points!";
+                }
+                else if (zone.Data.AwardPointsAsCredits & zone.Data.LocationName)
+                {
+                    message = $"{g} on {name} under attack {faction.Name} Scored {points} Points! ({points * Money} credits)";
                 }
                 else
                 {
-                    message = $"{faction.Name} Scored 1 Points!";
+                    message = $"{faction.Name} Scored {points} Points!";
                 }
 
+                zone.Data.Message = message;
+                
+                MyVisualScriptLogicProvider.SendChatMessage("messageToServer");
 
                 SaveData();
                 MyAPIGateway.Utilities.SendModMessage(Tools.ModMessageId, $"KotH: {message}");
                 Network.SendCommand("update", message: message,
+                    data: MyAPIGateway.Utilities.SerializeToBinary(GenerateUpdate()));
+                Network.SendCommand("BotMessage", message: message,
                     data: MyAPIGateway.Utilities.SerializeToBinary(GenerateUpdate()));
             }
         }
@@ -407,32 +426,43 @@ namespace KingOfTheHill
 
                 var ww = Worlds.Find(w => w.Name == name);
                 var sd = ww.Scores;
-                var h = sd.Any(s => s.FactionId == facId);             
-
-                if (!h)
+             var check = sd.Any(s => s.FactionId == facId);
+                //Tools.Log(MyLogSeverity.Warning, $"010 first print");
+                var factionScoreDescription = check? ww.Scores.Find(s => s.FactionId == facId)  : new ScoreDescription()
                 {
-                    ww.Scores.Add(new ScoreDescription()
-                    {
-                        FactionId = facId,
-                        FactionName = faction.Name,
-                        FactionTag = faction.Tag,
-                        Points = 1,
-                        PlanetId = name,
-                        Gridname = g,
-                    });
-                }
-
-                ww.Scores[(int)facId].Points -= zone.Data.PointsRemovedOnDeath;
-
-                if (ww.Scores[(int)facId].Points < 1)
+                    FactionId = facId,
+                    FactionName = faction.Name,
+                    FactionTag = faction.Tag,
+                    Points = 1,
+                    PlanetId = name,
+                    Gridname = g,
+                };
+                
+                //Tools.Log(MyLogSeverity.Warning, $"0100 first print");
+                //Tools.Log(MyLogSeverity.Warning, $"0600 {factionScoreDescription.Points}");
+               
+                if (zone.Data.PointsRemovedOnDeath > factionScoreDescription.Points )
                 {
-                    ww.Scores[(int)facId].Points = 1;
+                    //Tools.Log(MyLogSeverity.Warning, $"0200 second print");
+                     factionScoreDescription.Points = 1;
+                } 
+                else 
+                {
+                    //Tools.Log(MyLogSeverity.Warning, $"0300 second print sdfsdf");
+                  factionScoreDescription.Points -= zone.Data.PointsRemovedOnDeath;
                 }
-
+                //Tools.Log(MyLogSeverity.Warning, $"0400 second padsasdrint");
                 string message = $"[{faction.Tag}] {player.DisplayName} Died: -1 Points";
 
                 MyAPIGateway.Utilities.SendModMessage(Tools.ModMessageId, $"KotH: {message}");
+
+                if (!check)
+                {
+                    ww.Scores.Add(factionScoreDescription);
+                }
+
                 Network.SendCommand("update", message: message, data: MyAPIGateway.Utilities.SerializeToBinary(GenerateUpdate()));
+                //Tools.Log(MyLogSeverity.Warning, $"0500 second print");
             }
         }
 
@@ -527,6 +557,13 @@ namespace KingOfTheHill
             //MyVisualScriptLogicProvider.SendChatMessage("servercallback update");
         }
         //This is working 
+        private void ServerCallback_BotMessage(ulong steamId, string commandString, byte[] data)
+        {
+
+            //var BotMessage = ASCIIEncoding.ASCII.GetString(data);
+
+            MyVisualScriptLogicProvider.SendChatMessage("servercallback update");
+        }
         private void ServerCallback_SyncZone(ulong steamId, string commandString, byte[] data)
         {
             ZoneDescription zd = MyAPIGateway.Utilities.SerializeFromBinary<ZoneDescription>(data);
@@ -590,6 +627,11 @@ namespace KingOfTheHill
             {
                 Network.SendCommand("blank_message", "Requires admin rights", steamId: steamId);
             }
+        }
+
+        private void ServerCallBack_Wipe(ulong steamId, string commandString, byte[] data)
+        {
+            Clearscore();
         }
 
         #endregion

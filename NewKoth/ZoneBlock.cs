@@ -473,11 +473,13 @@ namespace KingOfTheHill
                     arg2.Add(placeholder);
                     arg3.Add(placeholder);
                 }
-                foreach (var name in ComponentPrizeList) {
-                    
+                foreach (var name in ComponentPrizeList)
+                {
+
                     var toList = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(name), MyStringId.GetOrCompute(name), objectText);
                     arg2.Add(toList);
                 }
+
 
             }
             catch (Exception ex)
@@ -519,15 +521,17 @@ namespace KingOfTheHill
                 string objectText = "abc";
                 var dummy = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute("-Select Ore Below-"), MyStringId.GetOrCompute("-Select Ore Below-"), objectText);
                 arg5.Add(dummy);
-                
-                foreach (var name in OrePrizeList) {
-                    
+                if (!string.IsNullOrEmpty(Data.OreListBoxOutputString))
+                {
+                    var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(Data.OreListBoxOutputString),
+                        MyStringId.GetOrCompute(Data.OreListBoxOutputString), Data.OreListBoxOutputString);
+                    arg5.Add(placeholder);
+                    arg6.Add(placeholder);
+                }
+                foreach (var name in OrePrizeList)
+                {
+
                     var toList = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(name), MyStringId.GetOrCompute(name), objectText);
-                    if (string.IsNullOrEmpty(name));
-                    {
-                        arg6.Add(toList);
-                    }
-                    
                     arg5.Add(toList);
                 }
 
@@ -571,15 +575,17 @@ namespace KingOfTheHill
                 string objectText = "abc";
                 var dummy = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute("-Select Ingot Below-"), MyStringId.GetOrCompute("-Select Ingot Below-"), objectText);
                 arg8.Add(dummy);
-                
-                foreach (var name in IngotPrizeList) {
-                    
+                if (!string.IsNullOrEmpty(Data.IngotListBoxOutputString))
+                {
+                    var placeholder = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(Data.IngotListBoxOutputString),
+                        MyStringId.GetOrCompute(Data.IngotListBoxOutputString), Data.IngotListBoxOutputString);
+                    arg8.Add(placeholder);
+                    arg9.Add(placeholder);
+                }
+                foreach (var name in IngotPrizeList)
+                {
+
                     var toList = new MyTerminalControlListBoxItem(MyStringId.GetOrCompute(name), MyStringId.GetOrCompute(name), objectText);
-                    if (string.IsNullOrEmpty(name));
-                    {
-                        arg9.Add(toList);
-                    }
-                    
                     arg8.Add(toList);
                 }
 
@@ -642,6 +648,16 @@ namespace KingOfTheHill
                 Checkbox.Getter = (block) => Data.ActivateOnCharacter;
                 Checkbox.Title = MyStringId.GetOrCompute("Activate On Character");
                 Checkbox.Tooltip = MyStringId.GetOrCompute("Only requires a player to activate the zone");
+                MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyBeacon>(Checkbox);
+                
+                Checkbox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, IMyBeacon>("Zone_LocationName");
+                Checkbox.Enabled = (block) => { return block.EntityId == ModBlock.EntityId; };
+                Checkbox.Visible = (block) => { return block.EntityId == ModBlock.EntityId; };
+
+                Checkbox.Setter = (block, value) => { Data.LocationName = value; OnUpdate.Invoke(this); };
+                Checkbox.Getter = (block) => Data.LocationName;
+                Checkbox.Title = MyStringId.GetOrCompute("Give Location & Name");
+                Checkbox.Tooltip = MyStringId.GetOrCompute("gives location and name of koth when point is scored");
                 MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyBeacon>(Checkbox);
 
                 Checkbox = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, IMyBeacon>("Zone_ActivateOnSmallGrid");
